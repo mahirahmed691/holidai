@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Holidai",
+    "slug": "Holidai",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
