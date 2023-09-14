@@ -3,6 +3,7 @@ import { View, Text, ScrollView, FlatList, TouchableOpacity, Image } from 'react
 import { Searchbar, Card } from 'react-native-paper'; 
 import * as Location from 'expo-location';
 import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-expo';
+import { ViewPropTypes } from 'deprecated-react-native-prop-types'; // Import 'ViewPropTypes'
 import Icon from 'react-native-vector-icons/FontAwesome5'; 
 import CityImages from '../components/CityImages';
 import popularCities from '../data/cityData'; 
@@ -207,8 +208,8 @@ function MyProfileScreen({ apiKey }) {
                   <View>
                     
                     <View style={styles.ratingContainer}>
-                      <View style={{flexDirection:'row'}}>
-                        <Icon name="star" size={18} color="#111" />
+                      <View style={{flexDirection:'row', marginVertical:10}}>
+                        <Icon name="star" size={18} color="#111" solid style={{marginVertical:9}} />
                         <Text style={styles.foodName}> {item.rating}</Text>
                       </View>
                     <Text style={styles.foodName}>{item.price}</Text>

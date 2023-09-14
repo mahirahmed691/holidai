@@ -8,7 +8,7 @@ import SignInScreen from '../screens/SignInScreen';
 import VerifyCodeScreen from '../screens/VerifyCodeScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import ItineraryScreen from '../screens/ItineraryScreen'; 
+import ItineraryScreen from '../screens/ItineraryScreen';
 import HotelList from '../screens/HotelListScreen';
 import FlightScreen from '../screens/FlightScreen';
 import MusicScreen from '../screens/MusicScreen';
@@ -17,7 +17,7 @@ import { RootStackParamList } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import { ClerkLoaded, useUser } from '@clerk/clerk-expo';
 
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // Import the icon library you want to use
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function Navigation() {
   return (
@@ -31,15 +31,15 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const tabNavigatorOptions = {
-  tabBarActiveTintColor: '#9ff9ff', // Active icon color
-  tabBarInactiveTintColor: 'gray', // Inactive icon color
+  tabBarActiveTintColor: '#101',
+  tabBarInactiveTintColor: 'gray',
   labelStyle: {
     fontSize: 10,
     fontWeight: '700',
   },
   headerShown: false,
   style: {
-    backgroundColor: '#000', // Black background for the tab bar
+    backgroundColor: '#000',
   },
 };
 
@@ -47,41 +47,34 @@ const tabScreenOptions = ({ route }) => ({
   tabBarIcon: ({ focused, color, size }) => {
     let iconName;
     if (route.name === 'Profile') {
-      iconName = 'home'; // Your icon name
+      iconName = 'home';
     } else if (route.name === 'Settings') {
-      iconName = 'cog'; // Your icon name
-    } else if (route.name === 'Itinerary'){
-      iconName = 'note'; 
-    } else if (route.name === 'Hotel'){
-      iconName = 'bed'; 
+      iconName = 'cog';
+    } else if (route.name === 'Itinerary') {
+      iconName = 'heart';
+    } else if (route.name === 'Hotel') {
+      iconName = 'bed';
+    } else if (route.name === 'Flight') {
+      iconName = 'airplane';
+    } else if (route.name === 'Music') {
+      iconName = 'music-note';
+    } else if (route.name === 'Food') {
+      iconName = 'food';
     }
-    else if (route.name === 'Flight'){
-      iconName = 'airplane'; 
-    }
-    else if (route.name === 'Music'){
-      iconName = 'music'; 
-    }
-    else if (route.name === 'Food'){
-      iconName = 'food'; 
-    }
-    
+
     return <Icon name={iconName} size={size} color={color} />;
   },
-  tabBarLabel: '', // Set the tabBarLabel to an empty string to hide the title
+  tabBarLabel: '',
 });
 
-
-  
 const RootNavigator = () => {
   const { isSignedIn } = useUser();
 
   return (
     <ClerkLoaded>
       {isSignedIn ? (
-        <Tab.Navigator
-          {...tabNavigatorOptions}
-        >
-             <Tab.Screen
+        <Tab.Navigator screenOptions={tabNavigatorOptions}>
+          <Tab.Screen
             name="Profile"
             component={MyProfileScreen}
             options={tabScreenOptions}
@@ -101,12 +94,12 @@ const RootNavigator = () => {
             component={FoodScreen}
             options={tabScreenOptions}
           />
-          <Stack.Screen
+          <Tab.Screen
             name="Itinerary"
             component={ItineraryScreen}
             options={tabScreenOptions}
           />
-          <Stack.Screen
+          <Tab.Screen
             name="Music"
             component={MusicScreen}
             options={tabScreenOptions}
@@ -116,12 +109,10 @@ const RootNavigator = () => {
             component={SettingsScreen}
             options={tabScreenOptions}
           />
-          
+          {/* Include FoodDetailScreen here */}
         </Tab.Navigator>
       ) : (
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-        >
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen
             name="SignIn"
             component={SignInScreen}

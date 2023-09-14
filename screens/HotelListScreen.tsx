@@ -8,41 +8,58 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
-import { SignedIn, SignedOut, useAuth, useUser } from '@clerk/clerk-expo';
 import { Searchbar, Card, Title, Paragraph, Chip } from 'react-native-paper';
-import axios from 'axios';
-import hotelData from '../data/hotelData';
 import ModalDropdown from 'react-native-modal-dropdown';
-import { useTheme } from '../themeContext';
-import Icon from 'react-native-vector-icons/FontAwesome5'; // Import FontAwesome icons
+import axios from 'axios';
 
 export default function HotelList() {
-  const { darkMode, toggleDarkMode } = useTheme();
+  const [hotelData, setHotelData] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredHotels, setFilteredHotels] = useState(hotelData);
-  const [selectedCurrency, setSelectedCurrency] = useState('GBP'); // Default currency is GBP
+  const [filteredHotels, setFilteredHotels] = useState([]);
+  const [selectedCurrency, setSelectedCurrency] = useState('GBP');
   const [exchangeRates, setExchangeRates] = useState({});
-  const [currencies, setCurrencies] = useState(['GBP']); //
-  const { user } = useUser();
+  const [currencies, setCurrencies] = useState(['GBP']);
 
   const convertCurrency = (priceInGBP) => {
     if (exchangeRates[selectedCurrency]) {
       const convertedPrice = (priceInGBP * exchangeRates[selectedCurrency]).toFixed(2);
       return `${convertedPrice} ${selectedCurrency}`;
     }
-    return `£${priceInGBP} ${selectedCurrency}`; // Default to GBP if conversion rate is not available
+    return `£${priceInGBP} ${selectedCurrency}`;
   };
 
   useEffect(() => {
+    // Set up Axios to use the RapidAPI endpoint with the required headers
+    const axiosInstance = axios.create({
+      baseURL: 'https://hotels4.p.rapidapi.com',
+      headers: {
+        'X-RapidAPI-Key': '526f6bb878msh75578594898d51bp1adc7fjsn31e679e857d3',
+        'X-RapidAPI-Host': 'hotels4.p.rapidapi.com'
+      }
+    });
+  
+    // Fetch hotel data from the API
+    axiosInstance
+      .get('/v2/get-meta-data')
+      .then((response) => {
+        if (response.data && response.data.data) {
+          setHotelData(response.data.data);
+          setFilteredHotels(response.data.data);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching hotel data:', error);
+      });
+
+
     // Fetch exchange rates from "exchangeratesapi.io"
     axios
-      .get(`https://openexchangerates.org/api/latest.json?app_id=7474faa22ff84a508d192c3f651d7334`)
+      .get('https://openexchangerates.org/api/latest.json?app_id=7474faa22ff84a508d192c3f651d7334')
       .then((response) => {
         setExchangeRates(response.data.rates);
-        // Get all available currencies from the API response and add them to the currency list
         const allCurrencies = Object.keys(response.data.rates);
         setCurrencies((prevCurrencies) => {
-          const uniqueCurrencies = ['USD', ...allCurrencies]; // Include USD as the default currency and remove duplicates
+          const uniqueCurrencies = ['GBP', ...allCurrencies];
           return [...new Set(uniqueCurrencies)];
         });
       })
@@ -63,45 +80,50 @@ export default function HotelList() {
     setFilteredHotels(filtered);
   };
 
+  const renderItem = ({ item }) => (
+    <Card style={styles.hotelCard}>
+      <Card.Cover source={{ uri: item.image }} />
+      <Card.Content>
+        <Title style={styles.hotelName}>
+          {item.name}
+        </Title>
+        <Paragraph style={styles.hotelLocation}>
+          {item.location}
+        </Paragraph>
+      </Card.Content>
+      <Card.Actions>
+        <Chip icon="star" style={styles.hotelRating}>
+          {item.rating}
+        </Chip>
+        <Chip icon="cash" style={styles.hotelPrice}>
+          {convertCurrency(item.pricePerNight)}
+        </Chip>
+      </Card.Actions>
+      <Card.Content>
+        <Paragraph style={styles.hotelAmenities}>
+          Amenities: {item.amenities.join(', ')}
+        </Paragraph>
+      </Card.Content>
+    </Card>
+  );
+
   return (
-    <View style={[styles.container, darkMode ? styles.darkContainer : null]}>
-      <View style={styles.headerContainer}>
-        
-          <View style={[styles.header2, darkMode ? styles.header2Dark: null]}>
-          <Image
-            source={{ uri: user.profileImageUrl }}
-            style={styles.profileImage}
-          />
-          <TouchableOpacity onPress={toggleDarkMode}>
-          <Icon
-            name={darkMode ? 'lightbulb' : 'moon'}
-            type="font-awesome-5"
-            color={darkMode ? '#fff' : '#000'}
-            size={24}
-          />
-        </TouchableOpacity>
-        </View>
-        
-      </View>
-      <View style={[styles.header, darkMode ? styles.darkHeader : null]}>
+    <View style={styles.container}>
+      <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Searchbar
             placeholder="Search Hotels"
             onChangeText={handleSearch}
             value={searchQuery}
-            style={[styles.hotelSearchBar, darkMode ? styles.darkSearchBar : null]}
+            style={styles.hotelSearchBar}
           />
           <ModalDropdown
-          style={[styles.modalButton, darkMode ? styles.darkCurrency : null]}
             options={currencies}
             defaultValue={`${selectedCurrency}`}
             onSelect={(index, value) => setSelectedCurrency(value)}
             textStyle={styles.pickerLabel}
             dropdownTextStyle={styles.modalText}
-            dropdownStyle={[
-              styles.modalContent,
-              darkMode ? styles.modalContent : null,
-            ]}
+            dropdownStyle={styles.modalContent}
           />
         </View>
       </View>
@@ -110,28 +132,26 @@ export default function HotelList() {
           data={filteredHotels}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <Card style={[styles.hotelCard, darkMode ? styles.darkHotelCard : null]}>
+            <Card style={styles.hotelCard}>
               <Card.Cover source={{ uri: item.image }} />
               <Card.Content>
-                <Title style={[styles.hotelName, darkMode ? styles.darkHotelName : null]}>
+                <Title style={styles.hotelName}>
                   {item.name}
                 </Title>
-                <Paragraph style={[styles.hotelLocation, darkMode ? styles.darkHotelLocation : null]}>
+                <Paragraph style={styles.hotelLocation}>
                   {item.location}
                 </Paragraph>
               </Card.Content>
               <Card.Actions>
-                <Chip icon="star" style={[styles.hotelRating, darkMode ? styles.darkHotelRating : null]}>
+                <Chip icon="star" style={styles.hotelRating}>
                   {item.rating}
                 </Chip>
-                <Chip icon="cash" style={[styles.hotelPrice, darkMode ? styles.darkHotelPrice : null]}>
+                <Chip icon="cash" style={styles.hotelPrice}>
                   {convertCurrency(item.pricePerNight)}
                 </Chip>
               </Card.Actions>
               <Card.Content>
-                <Paragraph
-                  style={[styles.hotelAmenities, darkMode ? styles.darkHotelAmenities : null]}
-                >
+                <Paragraph style={styles.hotelAmenities}>
                   Amenities: {item.amenities.join(', ')}
                 </Paragraph>
               </Card.Content>
@@ -146,8 +166,11 @@ export default function HotelList() {
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
+    backgroundColor: "#fff",
+    padding: 10,
+    paddingTop: 50, // Adjust the top padding to create space at the top
+
+  }, 
   darkContainer: {
     flex: 1,
     backgroundColor: '#111',
@@ -155,7 +178,7 @@ export const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    padding:10,
+    padding:0,
   },
   header: {
     flexDirection: 'row',
@@ -170,9 +193,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 5,
+    // paddingHorizontal: 5,
     paddingVertical: 8,
     backgroundColor: '#fff',
+    
   },
   header2Dark: {
     flex:1,

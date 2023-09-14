@@ -5,7 +5,8 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     padding: 10,
-  },
+    paddingTop: 50, // Adjust the top padding to create space at the top
+  },  
   signInContainer: {
     flex: 1,
     backgroundColor: "#FBD3E4",

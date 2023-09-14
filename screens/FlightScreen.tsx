@@ -77,10 +77,7 @@ const FlightScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16, backgroundColor: '#ffffff' }}>
-      <Text style={{ fontSize: 24, marginBottom: 16 }}>
-        Flight Times to Cities Around the World
-      </Text>
+    <View style={styles.container}>
       <Searchbar
         style={styles.searchBar}
         placeholder="Search by Flight ID"
